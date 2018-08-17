@@ -37,14 +37,16 @@ namespace Ivony.Web
 
 
 
-    Task IRouter.RouteAsync( RouteContext context )
+    async Task IRouter.RouteAsync( RouteContext context )
     {
       var routeData = GetRouteData( context.HttpContext );
       context.RouteData = routeData;
+
       if ( Handler != null )
         context.Handler = Handler.GetRequestHandler( context.HttpContext, routeData );
 
-      return Task.CompletedTask;
+      if ( DefaultRouter != null )
+        await DefaultRouter.RouteAsync( context );
     }
 
     VirtualPathData IRouter.GetVirtualPath( VirtualPathContext context )
@@ -67,7 +69,8 @@ namespace Ivony.Web
 
       Logger?.LogInformation( "Begin GetRouteData" );
 
-      var virtualPath = httpContext.Request.Path;
+      var virtualPath = httpContext.Request.Path.Value.Substring( httpContext.Request.PathBase.Value.Length );
+      virtualPath = "~/" + virtualPath.TrimStart( '/' );
 
 
       if ( IsIgnoredPath( virtualPath ) )
@@ -116,6 +119,7 @@ namespace Ivony.Web
         routeData.DataTokens.Add( pair.Key, pair.Value );
 
       routeData.DataTokens["RoutingRuleName"] = data.Rule.Name;
+      routeData.Routers.Add( this );
 
       Cache.Set( cacheKey, routeData );
 
@@ -125,17 +129,6 @@ namespace Ivony.Web
 
     }
 
-
-    /// <summary>
-    /// 写入追踪消息
-    /// </summary>
-    /// <param name="message">消息内容</param>
-    /// <param name="level">消息级别</param>
-    protected void Trace( string message, TraceLevel level = TraceLevel.Info )
-    {
-      //UNDONE Trace
-      //WebServiceLocator.GetTraceService().Trace( level, "Simple Route Table", message );
-    }
 
 
     /// <summary>
@@ -205,6 +198,8 @@ namespace Ivony.Web
 
       Cache.Set( cacheKey, virtualPath, new MemoryCacheEntryOptions() { Priority = CacheItemPriority.High } );
 
+      virtualPath = virtualPath.Replace( "~", context.HttpContext.Request.PathBase );
+
       return CreateVirtualPathData( virtualPath, bestRule );
     }
 
@@ -266,12 +261,20 @@ namespace Ivony.Web
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
     public virtual SimpleRouteRule AddRule( string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
     {
+      if ( name == null )
+        throw new ArgumentNullException( nameof( name ) );
 
       if ( urlPattern == null )
-        throw new ArgumentNullException( "urlPattern" );
+        throw new ArgumentNullException( nameof( urlPattern ) );
 
       if ( routeValues == null )
-        throw new ArgumentNullException( "routeValues" );
+        throw new ArgumentNullException( nameof( routeValues ) );
+
+
+
+
+      if ( urlPattern.StartsWith( "~/" ) == false )
+        urlPattern = "~/" + urlPattern;
 
       var rule = new SimpleRouteRule( name, urlPattern, null, oneway, routeValues, queryKeys );
 
@@ -364,13 +367,13 @@ namespace Ivony.Web
     /// <param name="name">简单路由表名称</param>
     /// <param name="handler">处理路由请求的对象</param>
     /// <param name="mvcCompatible">是否产生MVC兼容的虚拟路径（去除~/）</param>
-    public SimpleRouteTable( string name, ILogger logger = null, IRouteHandler handler = null, UrlEncoder encoder = null, bool mvcCompatible = false )
+    public SimpleRouteTable( string name, ILogger logger = null, IRouter defaultRouter = null, IRouteHandler handler = null, UrlEncoder encoder = null )
     {
       Name = name;
       Handler = handler;
       UrlEncoder = encoder ?? UrlEncoder.Default;
       Logger = logger;
-      MvcCompatible = mvcCompatible;
+      DefaultRouter = defaultRouter;
     }
 
 
@@ -410,6 +413,7 @@ namespace Ivony.Web
     /// 用于记录日志的日志记录器
     /// </summary>
     public ILogger Logger { get; }
+    public IRouter DefaultRouter { get; }
 
     /// <summary>
     /// 获取 URL 默认编码格式
