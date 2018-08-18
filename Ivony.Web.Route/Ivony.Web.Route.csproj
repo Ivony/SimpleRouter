@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ivony.Web.Route.Abstract\Ivony.Web.Route.Abstract.csproj" />
+  </ItemGroup>
+
 </Project>

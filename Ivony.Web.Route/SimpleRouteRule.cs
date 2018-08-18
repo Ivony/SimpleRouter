@@ -23,7 +23,7 @@ namespace Ivony.Web
     /// <summary>定义匹配动态路径段的正则表达式</summary>
     public const string dynamicParagraphPattern = @"(?<paragraph>\{[\p{Lu}\p{Ll}\p{Nd}]+\})";
     /// <summary>定义匹配 URL 模式的正则表达式</summary>
-    public static readonly string urlPattern = @"(^~/$)|(^~((/{static}(/{static})*(/{dynamic})*)|((/{dynamic})+))$)".Replace( "{static}", staticParagraphPattern ).Replace( "{dynamic}", dynamicParagraphPattern );
+    public static readonly string urlPattern = @"(^({static}/)*({dynamic}/)*$)|(^/$)".Replace( "{static}", staticParagraphPattern ).Replace( "{dynamic}", dynamicParagraphPattern );
 
     private static readonly Regex urlPatternRegex = new Regex( urlPattern, RegexOptions.Compiled );
 
@@ -55,7 +55,7 @@ namespace Ivony.Web
       var match = urlPatternRegex.Match( urlPattern );
 
       if ( !match.Success )
-        throw new FormatException( "URL模式格式不正确" );
+        throw new FormatException( $"url pattern is invalid format. pattern: \"{urlPattern}\"" );
 
       _paragraphes = match.Groups["paragraph"].Captures.Cast<Capture>().Select( c => c.Value ).ToArray();
 
@@ -183,11 +183,11 @@ namespace Ivony.Web
         if ( _prefix == null )
         {
           var dynamicStarts = UrlPattern.IndexOf( '{' );
-          if ( dynamicStarts < 0 )                                 //没有动态参数直接返回 pattern
+          if ( dynamicStarts < 0 )                              //没有动态参数直接返回 pattern
             _prefix = UrlPattern;
 
           else
-            _prefix = UrlPattern.Substring( 0, dynamicStarts - 1 );//截取动态参数前面的部分
+            _prefix = UrlPattern.Substring( 0, dynamicStarts ); //截取动态参数前面的部分
         }
 
         return _prefix;
@@ -398,36 +398,24 @@ namespace Ivony.Web
     /// <param name="virtualPath">当前请求的虚拟路径</param>
     /// <param name="queries">当前请求的查询数据</param>
     /// <returns></returns>
-    public IDictionary<string, string> GetRouteValues( string virtualPath, IQueryCollection queries )
+    public IDictionary<string, string> GetRouteValues( PathString virtualPath, IQueryCollection queries )
     {
-
-      if ( virtualPath == null )
+      if ( virtualPath.HasValue == false )
         throw new ArgumentNullException( "virtualPath" );
-
-      if ( virtualPath.StartsWith( "~/" ) == false )
-        throw new ArgumentException( "virtualPath 只能使用应用程序根相对路径，即以 \"~/\" 开头的路径，调用 VirtualPathUtility.ToAppRelative 方法或使用 HttpRequest.AppRelativeCurrentExecutionFilePath 属性获取", "virtualPath" );
-
 
 
       var queryKeySet = new HashSet<string>( QueryKeys, StringComparer.OrdinalIgnoreCase );
       var requestQueryKeySet = new HashSet<string>( queries.Keys, StringComparer.OrdinalIgnoreCase );
 
-      if ( LimitedQueries && !queryKeySet.IsSupersetOf( requestQueryKeySet ) )//如果限制了查询键并且查询键集合没有完全涵盖所有传进来的QueryString键的话，即存在有一个QueryString键不在查询键集合中，则这条规则不适用。
-        return null;
+
+      if ( LimitedQueries )
+      {
+        if ( queryKeySet.IsSupersetOf( requestQueryKeySet ) == false )//如果限制了查询键并且查询键集合没有完全涵盖所有传进来的QueryString键的话，即存在有一个QueryString键不在查询键集合中，则这条规则不适用。
+          return null;
+      }
 
 
-
-      virtualPath = multipleSlashRegex.Replace( virtualPath, "/" );//将连续的/替换成单独的/
-      var extensionLength = Path.GetExtension( virtualPath ).Length;
-      if ( extensionLength > 0 )
-        virtualPath = virtualPath.Remove( virtualPath.Length - extensionLength );//去除扩展名
-
-
-      virtualPath = virtualPath.Substring( 2 );
-      virtualPath = virtualPath.TrimEnd( '/' );//在虚拟路径最后移除 / ，使得 xxx/ 与 xxx 被视为同一路径。
-
-
-      var pathParagraphs = virtualPath.Split( '/' );
+      var pathParagraphs = virtualPath.Value.Split( '/' );
 
       if ( virtualPath == "" )
         pathParagraphs = new string[0];

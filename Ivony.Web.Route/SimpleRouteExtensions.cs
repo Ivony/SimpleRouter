@@ -225,8 +225,8 @@ namespace Ivony.Web
       var routeTable = builder.Routes.OfType<SimpleRouteTable>().FirstOrDefault();
       if ( routeTable == null )
       {
-        var loggerProvider = (ILoggerProvider) builder.ApplicationBuilder.ApplicationServices.GetService( typeof( ILoggerProvider ) );
-        builder.Routes.Add( routeTable = new SimpleRouteTable( "Default", loggerProvider.CreateLogger( "Simple Route Table" ), builder.DefaultHandler ) );
+        var loggerFacory = (ILoggerFactory) builder.ApplicationBuilder.ApplicationServices.GetService( typeof( ILoggerFactory ) );
+        builder.Routes.Add( routeTable = new SimpleRouteTable( "Default", loggerFacory, builder.DefaultHandler ) );
       }
 
       return routeTable;

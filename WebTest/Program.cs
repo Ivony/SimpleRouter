@@ -17,8 +17,10 @@ namespace WebTest
       CreateWebHostBuilder( args ).Build().Run();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder( string[] args ) =>
-        WebHost.CreateDefaultBuilder( args )
-            .UseStartup<Startup>();
+    public static IWebHostBuilder CreateWebHostBuilder( string[] args ) => WebHost
+      .CreateDefaultBuilder( args )
+      .UseWebRoot( "/Test/" )
+      .UseUrls( "http://localhost:1000/Test/" )
+      .UseStartup<Startup>();
   }
 }

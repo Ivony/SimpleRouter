@@ -39,7 +39,21 @@ namespace Ivony.Web
 
     async Task IRouter.RouteAsync( RouteContext context )
     {
-      var routeData = GetRouteData( context.HttpContext );
+
+      var virtualPath = context.HttpContext.Request.Path.Value.Substring( context.HttpContext.Request.PathBase.Value.Length );
+
+      var verb = context.HttpContext.Request.Method;
+      var query = context.HttpContext.Request.Query;
+
+      var routeData = GetRouteData( verb, PreprocessVirtualPath( virtualPath ), query );
+      if ( routeData == null )
+      {
+        Logger.LogInformation( $"there is no route rule matched request: {verb} {virtualPath}?{context.HttpContext.Request.QueryString}" );
+        return;
+      }
+      Logger.LogInformation( $"route rule {routeData.DataTokens["RoutingRuleName"]} matched request: {verb} {virtualPath}?{context.HttpContext.Request.QueryString}" );
+      Logger.LogInformation( $"RouteData: {string.Join( ",", routeData.Values.Select( pair => string.Format( "\"{0}\" : \"{1}\"", pair.Key, pair.Value ) ).ToArray() )}" );
+
       context.RouteData = routeData;
 
       if ( Handler != null )
@@ -64,20 +78,15 @@ namespace Ivony.Web
     /// </summary>
     /// <param name="httpContext">HTTP 请求</param>
     /// <returns>路由数据</returns>
-    public RouteData GetRouteData( HttpContext httpContext )
+    public RouteData GetRouteData( string verb, PathString virtualPath, IQueryCollection query )
     {
-
-      Logger?.LogInformation( "Begin GetRouteData" );
-
-      var virtualPath = httpContext.Request.Path.Value.Substring( httpContext.Request.PathBase.Value.Length );
-      virtualPath = "~/" + virtualPath.TrimStart( '/' );
 
 
       if ( IsIgnoredPath( virtualPath ) )
         return null;
 
 
-      var cacheKey = RouteUrlCacheKeyPrefix + httpContext.Request.Method + "@" + httpContext.Request.GetUrl().AbsoluteUri;
+      var cacheKey = RouteUrlCacheKeyPrefix + verb + "@" + virtualPath + "?" + query;
 
       var routeData = Cache.Get<RouteData>( cacheKey );
 
@@ -89,19 +98,19 @@ namespace Ivony.Web
           return null;
 
 
-        Logger?.LogInformation( $"Hit cache - RouteData: {string.Join( ",", routeData.Values.Select( pair => string.Format( "\"{0}\" : \"{1}\"", pair.Key, pair.Value ) ).ToArray() )}" );
+        Logger?.LogInformation( "route cache hitted." );
 
         return new RouteData( routeData );
       }
 
 
       var data = _rules
-        .Where( r => r.Verb == null || r.Verb.Equals( httpContext.Request.Method, StringComparison.OrdinalIgnoreCase ) )
+        .Where( r => r.Verb == null || r.Verb.Equals( verb, StringComparison.OrdinalIgnoreCase ) )
         .OrderBy( r => r.DynamicRouteKeys.Count )
         .Select( r => new
         {
           Rule = r,
-          Values = r.GetRouteValues( virtualPath, httpContext.Request.Query ),
+          Values = r.GetRouteValues( virtualPath, query ),
         } )
         .Where( i => i.Values != null )
         .FirstOrDefault();
@@ -123,10 +132,25 @@ namespace Ivony.Web
 
       Cache.Set( cacheKey, routeData );
 
-      Logger?.LogInformation( $"RouteData: {string.Join( ",", routeData.Values.Select( pair => string.Format( "\"{0}\" : \"{1}\"", pair.Key, pair.Value ) ).ToArray() )}" );
+      Logger?.LogInformation( "route cache missed." );
 
       return new RouteData( routeData );
 
+    }
+
+    public static PathString PreprocessVirtualPath( PathString virtualPath )
+    {
+      if ( virtualPath.HasValue == false )
+        throw new ArgumentNullException( virtualPath );
+
+      var extension = Path.GetExtension( virtualPath );
+      if ( extension != null && extension.Length > 0 )
+        virtualPath = virtualPath.Value.Remove( virtualPath.Value.Length - extension.Length );
+
+      if ( virtualPath.Value.EndsWith( '/' ) == false )
+        virtualPath = virtualPath + "/";
+
+      return virtualPath;
     }
 
 
@@ -273,8 +297,12 @@ namespace Ivony.Web
 
 
 
-      if ( urlPattern.StartsWith( "~/" ) == false )
-        urlPattern = "~/" + urlPattern;
+      if ( urlPattern.StartsWith( "~/" ) )
+        urlPattern = urlPattern.Substring( 2 );
+
+
+      if ( urlPattern.EndsWith( "/" ) == false )
+        urlPattern += "/";
 
       var rule = new SimpleRouteRule( name, urlPattern, null, oneway, routeValues, queryKeys );
 
@@ -298,6 +326,15 @@ namespace Ivony.Web
 
       return rule;
     }
+
+
+    ISimpleRouteBuilder ISimpleRouteBuilder.AddRule( string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
+    {
+      AddRule( name, verb, oneway, urlPattern, routeValues, queryKeys );
+      return this;
+    }
+
+
 
 
     private static ConflictCheckList conflictCheckList = new ConflictCheckList();
@@ -367,12 +404,12 @@ namespace Ivony.Web
     /// <param name="name">简单路由表名称</param>
     /// <param name="handler">处理路由请求的对象</param>
     /// <param name="mvcCompatible">是否产生MVC兼容的虚拟路径（去除~/）</param>
-    public SimpleRouteTable( string name, ILogger logger = null, IRouter defaultRouter = null, IRouteHandler handler = null, UrlEncoder encoder = null )
+    public SimpleRouteTable( string name, ILoggerFactory loggerFactory = null, IRouter defaultRouter = null, IRouteHandler handler = null, UrlEncoder encoder = null )
     {
       Name = name;
       Handler = handler;
       UrlEncoder = encoder ?? UrlEncoder.Default;
-      Logger = logger;
+      Logger = loggerFactory.CreateLogger<SimpleRouteTable>();
       DefaultRouter = defaultRouter;
     }
 
@@ -413,6 +450,10 @@ namespace Ivony.Web
     /// 用于记录日志的日志记录器
     /// </summary>
     public ILogger Logger { get; }
+
+    /// <summary>
+    /// 默认路由对象
+    /// </summary>
     public IRouter DefaultRouter { get; }
 
     /// <summary>

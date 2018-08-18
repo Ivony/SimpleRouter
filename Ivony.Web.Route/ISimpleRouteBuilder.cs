@@ -8,6 +8,6 @@ namespace Ivony.Web
   /// </summary>
   public interface ISimpleRouteBuilder
   {
-    SimpleRouteRule AddRule( string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys );
+    ISimpleRouteBuilder AddRule( string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys );
   }
 }
