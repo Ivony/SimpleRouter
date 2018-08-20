@@ -55,8 +55,9 @@ namespace WebTest
        {
 
          routes
-           .MapSimple( "", new { controller = "Home", action = "Index" } )
-           .MapSimple( "{controller}/{action}", new object() );
+           .SimpleRouteTable()
+           .MapRoute( "", new { controller = "Home", action = "Index" } )
+           .MapRoute( "{controller}/{action}", new object() );
 
        } );
     }

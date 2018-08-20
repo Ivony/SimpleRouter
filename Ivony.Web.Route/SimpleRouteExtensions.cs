@@ -22,10 +22,11 @@ namespace Ivony.Web
     public static IDictionary<string, string> ToPropertyMapping( object obj )
     {
 
-      var values = new Dictionary<string, string>();
       if ( obj == null )
-        return values;
+        return null;
 
+
+      var values = new Dictionary<string, string>();
 
       if ( obj is IDictionary dictionary )
       {
@@ -62,9 +63,9 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string urlPattern, object routeValues )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern, object routeValues = null )
     {
-      return MapSimple( builder, urlPattern, ToPropertyMapping( routeValues ) );
+      return MapRoute( builder, urlPattern, ToPropertyMapping( routeValues ) );
     }
 
 
@@ -75,9 +76,9 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string urlPattern, IDictionary<string, string> routeValues )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern, IDictionary<string, string> routeValues = null )
     {
-      return MapSimple( builder, "{" + urlPattern + "}", urlPattern, routeValues, null );
+      return MapRoute( builder, "{" + urlPattern + "}", urlPattern, routeValues, null );
     }
 
 
@@ -88,9 +89,9 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string urlPattern, object routeValues, IReadOnlyCollection<string> queryKeys )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern, object routeValues, IReadOnlyCollection<string> queryKeys )
     {
-      return MapSimple( builder, urlPattern, ToPropertyMapping( routeValues ), queryKeys );
+      return MapRoute( builder, urlPattern, ToPropertyMapping( routeValues ), queryKeys );
     }
     /// <summary>
     /// 添加一个路由规则
@@ -99,9 +100,9 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
     {
-      return MapSimple( builder, "{" + urlPattern + "}", urlPattern, routeValues, queryKeys );
+      return MapRoute( builder, "{" + urlPattern + "}", urlPattern, routeValues, queryKeys );
     }
 
 
@@ -110,33 +111,10 @@ namespace Ivony.Web
     /// </summary>
     /// <param name="name">规则名称</param>
     /// <param name="urlPattern">URL 模式</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string urlPattern )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string urlPattern )
     {
-      return MapSimple( builder, name, urlPattern, new Dictionary<string, string>(), new string[0] );
+      return MapRoute( builder, name, urlPattern, new Dictionary<string, string>(), new string[0] );
     }
-
-
-    /// <summary>
-    /// 添加一个路由规则
-    /// </summary>
-    /// <param name="name">规则名称</param>
-    /// <param name="urlPattern">URL 模式</param>
-    /// <param name="routeValues">静态/默认路由值</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string urlPattern, object routeValues )
-    {
-      return MapSimple( builder, name, urlPattern, ToPropertyMapping( routeValues ) );
-    }
-    /// <summary>
-    /// 添加一个路由规则
-    /// </summary>
-    /// <param name="name">规则名称</param>
-    /// <param name="urlPattern">URL 模式</param>
-    /// <param name="routeValues">静态/默认路由值</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string urlPattern, IDictionary<string, string> routeValues )
-    {
-      return MapSimple( builder, name, null, false, urlPattern, routeValues, null );
-    }
-
 
 
     /// <summary>
@@ -145,11 +123,23 @@ namespace Ivony.Web
     /// <param name="name">规则名称</param>
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
-    /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string urlPattern, object routeValues, IReadOnlyCollection<string> queryKeys )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string urlPattern, object routeValues )
     {
-      return MapSimple( builder, name, urlPattern, ToPropertyMapping( routeValues ), queryKeys );
+      return MapRoute( builder, name, urlPattern, ToPropertyMapping( routeValues ) );
     }
+    /// <summary>
+    /// 添加一个路由规则
+    /// </summary>
+    /// <param name="name">规则名称</param>
+    /// <param name="urlPattern">URL 模式</param>
+    /// <param name="routeValues">静态/默认路由值</param>
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string urlPattern, IDictionary<string, string> routeValues )
+    {
+      return MapRoute( builder, name, null, false, urlPattern, routeValues, null );
+    }
+
+
+
     /// <summary>
     /// 添加一个路由规则
     /// </summary>
@@ -157,9 +147,20 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string urlPattern, object routeValues, IReadOnlyCollection<string> queryKeys )
     {
-      return MapSimple( builder, name, null, false, urlPattern, routeValues, queryKeys );
+      return MapRoute( builder, name, urlPattern, ToPropertyMapping( routeValues ), queryKeys );
+    }
+    /// <summary>
+    /// 添加一个路由规则
+    /// </summary>
+    /// <param name="name">规则名称</param>
+    /// <param name="urlPattern">URL 模式</param>
+    /// <param name="routeValues">静态/默认路由值</param>
+    /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
+    {
+      return MapRoute( builder, name, null, false, urlPattern, routeValues, queryKeys );
     }
 
 
@@ -173,9 +174,9 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string verb, bool oneway, string urlPattern, object routeValues, IReadOnlyCollection<string> queryKeys )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string verb, bool oneway, string urlPattern, object routeValues, IReadOnlyCollection<string> queryKeys )
     {
-      return MapSimple( builder, name, verb, oneway, urlPattern, ToPropertyMapping( routeValues ), queryKeys );
+      return MapRoute( builder, name, verb, oneway, urlPattern, ToPropertyMapping( routeValues ), queryKeys );
     }
     /// <summary>
     /// 添加一个路由规则
@@ -186,35 +187,10 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static IRouteBuilder MapSimple( this IRouteBuilder builder, string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
     {
-      var routeTable = SimpleRouteTable( builder );
-      routeTable.AddRule( name, verb, oneway, urlPattern, routeValues, queryKeys );
+      builder.AddRule( name, verb, oneway, urlPattern, routeValues ?? new Dictionary<string, string>(), queryKeys );
       return builder;
-    }
-
-
-    /// <summary>
-    /// 添加一个路由规则
-    /// </summary>
-    /// <param name="name">规则名称</param>
-    /// <param name="urlPattern">URL 模式</param>
-    /// <param name="routeValues">静态/默认路由值</param>
-    public static SimpleRouteRule AddRule( this SimpleRouteTable routeTable, string name, string urlPattern, IDictionary<string, string> routeValues )
-    {
-      return AddRule( routeTable, name, urlPattern, routeValues, null );
-    }
-
-    /// <summary>
-    /// 添加一个路由规则
-    /// </summary>
-    /// <param name="name">规则名称</param>
-    /// <param name="urlPattern">URL 模式</param>
-    /// <param name="routeValues">静态/默认路由值</param>
-    /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static SimpleRouteRule AddRule( this SimpleRouteTable routeTable, string name, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
-    {
-      return routeTable.AddRule( name, null, false, urlPattern, routeValues, queryKeys );
     }
 
 
@@ -234,6 +210,20 @@ namespace Ivony.Web
       }
 
       return routeTable;
+    }
+
+
+    /// <summary>
+    /// 获取默认的 SimpleRouteTable 对象
+    /// </summary>
+    /// <param name="builder">IRouteBuilder 对象</param>
+    /// <param name="routeSetup">路由设置方法</param>
+    /// <returns></returns>
+    public static IRouteBuilder SimpleRouteTable( this IRouteBuilder builder, Action<SimpleRouteTable> routeSetup )
+    {
+      var routeTable = builder.SimpleRouteTable();
+      routeSetup( routeTable );
+      return builder;
     }
   }
 }

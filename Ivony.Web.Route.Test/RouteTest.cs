@@ -29,7 +29,7 @@ namespace Ivony.Web.Route.Test
     public void Default()
     {
 
-      RouteTable.AddRule( "Default", "", new Dictionary<string, string> { ["Test"] = "Default" } );
+      RouteTable.MapRoute( "Default", "", new Dictionary<string, string> { ["Test"] = "Default" } );
       var data = RouteTable.GetRouteData( "GET", "~/", new QueryCollection() );
 
       Assert.AreEqual( data.Values["Test"], "Default" );
