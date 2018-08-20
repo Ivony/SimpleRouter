@@ -8,7 +8,7 @@ namespace Ivony.Web
   /// <summary>
   /// 简单路由表冲突检查表
   /// </summary>
-  public sealed class ConflictCheckList
+  public sealed class SimpleRouteConflictTable
   {
 
     private Dictionary<string, SimpleRouteRule> virtualPathList = new Dictionary<string, SimpleRouteRule>( StringComparer.OrdinalIgnoreCase );

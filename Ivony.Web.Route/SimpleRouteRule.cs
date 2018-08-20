@@ -317,7 +317,7 @@ namespace Ivony.Web
         if ( _virtualPathDescriptor != null )
           return _virtualPathDescriptor;
 
-        return _virtualPathDescriptor = Verb + "@" + StaticPrefix + string.Join( "", Enumerable.Repeat( "/{dynamic}", DynamicRouteKeys.Count ).ToArray() );
+        return _virtualPathDescriptor = Verb + "@" + StaticPrefix + string.Join( "", Enumerable.Repeat( "{dynamic}/", DynamicRouteKeys.Count ).ToArray() );
       }
     }
 
@@ -344,7 +344,7 @@ namespace Ivony.Web
             list.Add( string.Format( "<\"{0}\",dynamic>", key.Replace( "\"", "\\\"" ) ) );
         }
 
-        return _routeValuesDescriptor = Verb + "@" + string.Join( ",", list.ToArray() );
+        return _routeValuesDescriptor = string.Join( ",", list.ToArray() );
       }
     }
 

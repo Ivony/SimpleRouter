@@ -86,7 +86,7 @@ namespace Ivony.Web
         return null;
 
 
-      var cacheKey = RouteUrlCacheKeyPrefix + verb + "@" + virtualPath + "?" + query;
+      var cacheKey = RouteUrlCacheKeyPrefix + verb + "@" + virtualPath + query.ToQueryString();
 
       var routeData = Cache.Get<RouteData>( cacheKey );
 
@@ -180,7 +180,6 @@ namespace Ivony.Web
     /// <returns>虚拟路径信息</returns>
     public VirtualPathData GetVirtualPath( VirtualPathContext context )
     {
-
 
       var values = context.Values.ToDictionary( pair => pair.Key, pair => pair.Value == null ? null : pair.Value.ToString(), StringComparer.OrdinalIgnoreCase );
 
@@ -343,8 +342,7 @@ namespace Ivony.Web
 
 
 
-    private static ConflictCheckList conflictCheckList = new ConflictCheckList();
-    private static object _sync = new object();
+    private static SimpleRouteConflictTable conflictTable = new SimpleRouteConflictTable();
 
 
     /// <summary>
@@ -355,7 +353,7 @@ namespace Ivony.Web
     /// <returns>是否添加成功</returns>
     public static bool AddRuleAndCheckConflict( SimpleRouteRule rule, out SimpleRouteRule conflictRule )
     {
-      return conflictCheckList.AddRuleAndCheckConflict( rule, out conflictRule );
+      return conflictTable.AddRuleAndCheckConflict( rule, out conflictRule );
     }
 
 

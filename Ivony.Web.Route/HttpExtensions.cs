@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Ivony.Web
@@ -32,6 +33,23 @@ namespace Ivony.Web
 
       return virtualPath + "/";
     }
+
+
+    public static QueryString ToQueryString( this IQueryCollection query )
+    {
+      if ( query == null )
+        throw new ArgumentNullException( nameof( query ) );
+
+
+      var result = string.Join( "&", query.Select( pair => $"{pair.Key}={pair.Value}" ) );
+      if ( result == "" )
+        return new QueryString();
+
+      else
+
+        return new QueryString( "?" + result );
+    }
+
 
 
     public static string GetAppRelativePath( this HttpRequest request )

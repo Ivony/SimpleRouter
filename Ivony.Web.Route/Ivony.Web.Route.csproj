@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Ivony.Web</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>4.0.5</Version>
+    <Version>4.0.6</Version>
     <Authors>Ivony</Authors>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>in default, simple route table will logged.</Description>
@@ -15,10 +15,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Ivony.Web.Route.Abstract\Ivony.Web.Route.Abstract.csproj" />
   </ItemGroup>
 
 </Project>
