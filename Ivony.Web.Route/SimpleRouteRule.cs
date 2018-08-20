@@ -23,7 +23,7 @@ namespace Ivony.Web
     /// <summary>定义匹配动态路径段的正则表达式</summary>
     public const string dynamicParagraphPattern = @"(?<paragraph>\{[\p{Lu}\p{Ll}\p{Nd}]+\})";
     /// <summary>定义匹配 URL 模式的正则表达式</summary>
-    public static readonly string urlPattern = @"(^({static}/)*({dynamic}/)*$)|(^/$)".Replace( "{static}", staticParagraphPattern ).Replace( "{dynamic}", dynamicParagraphPattern );
+    public static readonly string urlPattern = @"^~/({static}/)*({dynamic}/)*$".Replace( "{static}", staticParagraphPattern ).Replace( "{dynamic}", dynamicParagraphPattern );
 
     private static readonly Regex urlPatternRegex = new Regex( urlPattern, RegexOptions.Compiled );
 
@@ -230,7 +230,7 @@ namespace Ivony.Web
 
         //value = HttpUtility.UrlEncode( value, RoutingTable.UrlEncoding );
 
-        builder.Append( "/" + value );
+        builder.Append( value + "/" );
 
       }
 
@@ -398,10 +398,16 @@ namespace Ivony.Web
     /// <param name="virtualPath">当前请求的虚拟路径</param>
     /// <param name="queries">当前请求的查询数据</param>
     /// <returns></returns>
-    public IDictionary<string, string> GetRouteValues( PathString virtualPath, IQueryCollection queries )
+    public IDictionary<string, string> GetRouteValues( string virtualPath, IQueryCollection queries )
     {
-      if ( virtualPath.HasValue == false )
-        throw new ArgumentNullException( "virtualPath" );
+      if ( virtualPath == null )
+        throw new ArgumentNullException( nameof( virtualPath ) );
+
+      if ( virtualPath.StartsWith( "~/" ) == false )
+        throw new ArgumentException( "virtualPath has invalid format", "virtualPath" );
+
+      virtualPath = virtualPath.Substring( 2 );
+
 
 
       var queryKeySet = new HashSet<string>( QueryKeys, StringComparer.OrdinalIgnoreCase );
@@ -415,10 +421,7 @@ namespace Ivony.Web
       }
 
 
-      var pathParagraphs = virtualPath.Value.Split( '/' );
-
-      if ( virtualPath == "" )
-        pathParagraphs = new string[0];
+      var pathParagraphs = virtualPath.Split( '/', StringSplitOptions.RemoveEmptyEntries );
 
 
       if ( pathParagraphs.Length != Paragraphes.Count )//路径段长度不一致，规则不适用

@@ -20,5 +20,30 @@ namespace Ivony.Web
       }.Uri;
     }
 
+
+    public static PathString ToDirectory( this PathString virtualPath )
+    {
+      if ( virtualPath.HasValue == false )
+        return null;
+
+      if ( virtualPath.Value.EndsWith( '/' ) )
+        return virtualPath;
+
+
+      return virtualPath + "/";
+    }
+
+
+    public static string GetAppRelativePath( this HttpRequest request )
+    {
+      if ( request.Path.HasValue == false )
+        return null;
+
+
+      var path = request.Path.Value.Substring( request.PathBase.Value.Length );
+
+      return "~/" + path.TrimStart( '/' );
+    }
+
   }
 }

@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ivony.Web.Route.Abstract", "Ivony.Web.Route.Abstract\Ivony.Web.Route.Abstract.csproj", "{2FD2DB9F-C076-4CBD-93B3-8D753D2DE280}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ivony.Web.Route.Abstract", "Ivony.Web.Route.Abstract\Ivony.Web.Route.Abstract.csproj", "{2FD2DB9F-C076-4CBD-93B3-8D753D2DE280}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ivony.Web.Route", "Ivony.Web.Route\Ivony.Web.Route.csproj", "{FC4E68A8-5B25-4E23-99E5-0410888DC175}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebTest", "WebTest\WebTest.csproj", "{68A00B22-DA31-4107-BBCB-0C713060911D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTest", "WebTest\WebTest.csproj", "{68A00B22-DA31-4107-BBCB-0C713060911D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ivony.Web.Route.Test", "Ivony.Web.Route.Test\Ivony.Web.Route.Test.csproj", "{D4F84AA3-CC2E-4B3E-B74B-77AD88E1F0E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{68A00B22-DA31-4107-BBCB-0C713060911D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68A00B22-DA31-4107-BBCB-0C713060911D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68A00B22-DA31-4107-BBCB-0C713060911D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4F84AA3-CC2E-4B3E-B74B-77AD88E1F0E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4F84AA3-CC2E-4B3E-B74B-77AD88E1F0E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4F84AA3-CC2E-4B3E-B74B-77AD88E1F0E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4F84AA3-CC2E-4B3E-B74B-77AD88E1F0E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

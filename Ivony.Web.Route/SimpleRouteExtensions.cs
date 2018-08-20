@@ -35,7 +35,11 @@ namespace Ivony.Web
         foreach ( var key in dictionary.Keys )
           values.Add( key.ToString(), dictionary[key]?.ToString() );
       }
-      else
+      else if ( obj is RouteValueDictionary routeValues )
+      {
+        foreach ( var key in routeValues.Keys )
+          values.Add( key.ToString(), routeValues[key]?.ToString() );
+      }
       {
 
         if ( obj != null )

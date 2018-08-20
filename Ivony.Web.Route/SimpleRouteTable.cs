@@ -40,7 +40,7 @@ namespace Ivony.Web
     async Task IRouter.RouteAsync( RouteContext context )
     {
 
-      var virtualPath = context.HttpContext.Request.Path.Value.Substring( context.HttpContext.Request.PathBase.Value.Length );
+      var virtualPath = context.HttpContext.Request.GetAppRelativePath();
 
       var verb = context.HttpContext.Request.Method;
       var query = context.HttpContext.Request.Query;
@@ -78,7 +78,7 @@ namespace Ivony.Web
     /// </summary>
     /// <param name="httpContext">HTTP 请求</param>
     /// <returns>路由数据</returns>
-    public RouteData GetRouteData( string verb, PathString virtualPath, IQueryCollection query )
+    public RouteData GetRouteData( string verb, string virtualPath, IQueryCollection query )
     {
 
 
@@ -93,7 +93,6 @@ namespace Ivony.Web
 
       if ( routeData != null )
       {
-
         if ( routeData.Routers.Contains( this ) == false )
           return null;
 
@@ -102,6 +101,10 @@ namespace Ivony.Web
 
         return new RouteData( routeData );
       }
+
+      Logger?.LogInformation( "route cache missed." );
+
+
 
 
       var data = _rules
@@ -132,22 +135,22 @@ namespace Ivony.Web
 
       Cache.Set( cacheKey, routeData );
 
-      Logger?.LogInformation( "route cache missed." );
 
       return new RouteData( routeData );
 
     }
 
-    public static PathString PreprocessVirtualPath( PathString virtualPath )
+    public static string PreprocessVirtualPath( string virtualPath )
     {
-      if ( virtualPath.HasValue == false )
-        throw new ArgumentNullException( virtualPath );
+      if ( virtualPath == null )
+        throw new ArgumentNullException( nameof( virtualPath ) );
+
 
       var extension = Path.GetExtension( virtualPath );
       if ( extension != null && extension.Length > 0 )
-        virtualPath = virtualPath.Value.Remove( virtualPath.Value.Length - extension.Length );
+        virtualPath = virtualPath.Remove( virtualPath.Length - extension.Length );
 
-      if ( virtualPath.Value.EndsWith( '/' ) == false )
+      if ( virtualPath.Any() && virtualPath.EndsWith( '/' ) == false )
         virtualPath = virtualPath + "/";
 
       return virtualPath;
@@ -181,12 +184,15 @@ namespace Ivony.Web
 
       var values = context.Values.ToDictionary( pair => pair.Key, pair => pair.Value == null ? null : pair.Value.ToString(), StringComparer.OrdinalIgnoreCase );
 
+      if ( values.TryGetValue( "area", out var area ) && area == "" )
+        values.Remove( "area" );
+
       var cacheKey = CreateCacheKey( values );
 
-      var virtualPath = Cache.Get<string>( cacheKey );
+      var cachedItem = Cache.Get<Tuple<string, SimpleRouteRule>>( cacheKey );
 
-      if ( virtualPath != null )
-        return new VirtualPathData( this, virtualPath );
+      if ( cachedItem != null )
+        return CreateVirtualPathData( context, cachedItem.Item1, cachedItem.Item2 );
 
 
       var keySet = new HashSet<string>( values.Keys, StringComparer.OrdinalIgnoreCase );
@@ -205,7 +211,7 @@ namespace Ivony.Web
 
       var bestRule = BestRule( candidateRules );
 
-      virtualPath = bestRule.CreateVirtualPath( values );
+      var virtualPath = bestRule.CreateVirtualPath( values );
 
 
       if ( IsIgnoredPath( virtualPath ) )//如果产生的虚拟路径是被忽略的，则返回 null
@@ -215,16 +221,8 @@ namespace Ivony.Web
       }
 
 
-      if ( MvcCompatible )
-        virtualPath = virtualPath.Substring( 2 );
-
-
-
-      Cache.Set( cacheKey, virtualPath, new MemoryCacheEntryOptions() { Priority = CacheItemPriority.High } );
-
-      virtualPath = virtualPath.Replace( "~", context.HttpContext.Request.PathBase );
-
-      return CreateVirtualPathData( virtualPath, bestRule );
+      Cache.Set( cacheKey, Tuple.Create( virtualPath, bestRule ), new MemoryCacheEntryOptions() { Priority = CacheItemPriority.High } );
+      return CreateVirtualPathData( context, virtualPath, bestRule );
     }
 
     /// <summary>
@@ -233,10 +231,12 @@ namespace Ivony.Web
     /// <param name="virtualPath">虚拟路径</param>
     /// <param name="rule">产生该虚拟路径的路由规则</param>
     /// <returns>VirtualPathData 对象</returns>
-    protected VirtualPathData CreateVirtualPathData( string virtualPath, SimpleRouteRule rule )
+    protected VirtualPathData CreateVirtualPathData( VirtualPathContext context, string virtualPath, SimpleRouteRule rule )
     {
-      var data = new VirtualPathData( this, virtualPath );
 
+      virtualPath = Regex.Replace( virtualPath, "^~", context.HttpContext.Request.PathBase );
+
+      var data = new VirtualPathData( this, virtualPath );
 
       foreach ( var pair in rule.DataTokens )
         data.DataTokens.Add( pair.Key, pair.Value );
@@ -296,12 +296,18 @@ namespace Ivony.Web
 
 
 
+      if ( urlPattern.StartsWith( "~/" ) == false )
+      {
+        if ( urlPattern.StartsWith( "/" ) )
+          throw new ArgumentException( "urlPattern has invalid format", "urlPattern" );
 
-      if ( urlPattern.StartsWith( "~/" ) )
-        urlPattern = urlPattern.Substring( 2 );
+        urlPattern = "~/" + urlPattern;
+      }
 
 
-      if ( urlPattern.EndsWith( "/" ) == false )
+      urlPattern = Regex.Replace( urlPattern, "/+", "/" );
+
+      if ( urlPattern.Any() && urlPattern.EndsWith( "/" ) == false )
         urlPattern += "/";
 
       var rule = new SimpleRouteRule( name, urlPattern, null, oneway, routeValues, queryKeys );
@@ -412,18 +418,6 @@ namespace Ivony.Web
       Logger = loggerFactory.CreateLogger<SimpleRouteTable>();
       DefaultRouter = defaultRouter;
     }
-
-
-
-    /// <summary>
-    /// 是否产生MVC兼容的虚拟路径（去除~/）
-    /// </summary>
-    public bool MvcCompatible
-    {
-      get;
-      private set;
-    }
-
 
 
 
