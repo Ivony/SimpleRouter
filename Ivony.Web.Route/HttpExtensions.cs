@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,13 +42,16 @@ namespace Ivony.Web
         throw new ArgumentNullException( nameof( query ) );
 
 
-      var result = string.Join( "&", query.Select( pair => $"{pair.Key}={pair.Value}" ) );
-      if ( result == "" )
+      var result = query
+        .SelectMany( pair => pair.Value is StringValues values ? values.Select( v => new KeyValuePair<string, string>( pair.Key, v ) ) : new[] { new KeyValuePair<string, string>( pair.Key, pair.Value ) } )
+        .OrderBy( pair => pair.Key ).ThenBy( pair => pair.Value )
+        .Select( pair => $"{pair.Key}={pair.Value}" );
+
+
+      if ( result.Any() == false )
         return new QueryString();
 
-      else
-
-        return new QueryString( "?" + result );
+      return new QueryString( "?" + string.Join( "&", result ) );
     }
 
 
