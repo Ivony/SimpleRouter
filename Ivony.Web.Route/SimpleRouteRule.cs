@@ -222,11 +222,11 @@ namespace Ivony.Web
         var value = routeValues[key];
 
         if ( string.IsNullOrEmpty( value ) )
-          throw new ArgumentException( "作为动态路径的路由值不能包含空引用或空字符串", "routeValues" );
+          throw new ArgumentException( $"作为动态路径的路由值不能包含空引用或空字符串，key={key}", "routeValues" );
 
 
         if ( value.Contains( '/' ) )
-          throw new ArgumentException( "作为动态路径的路由值不能包含路径分隔符 '/'", "routeValues" );
+          throw new ArgumentException( $"作为动态路径的路由值不能包含路径分隔符 '/'，key={key}", "routeValues" );
 
         //value = HttpUtility.UrlEncode( value, RoutingTable.UrlEncoding );
 
