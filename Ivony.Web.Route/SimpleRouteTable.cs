@@ -48,10 +48,10 @@ namespace Ivony.Web
       var routeData = GetRouteData( verb, PreprocessVirtualPath( virtualPath ), query );
       if ( routeData == null )
       {
-        Logger.LogInformation( $"there is no route rule matched request: {verb} {virtualPath}?{context.HttpContext.Request.QueryString}" );
+        Logger.LogInformation( $"there is no route rule matched request: {verb} {virtualPath}{context.HttpContext.Request.QueryString}" );
         return;
       }
-      Logger.LogInformation( $"route rule {routeData.DataTokens["RoutingRuleName"]} matched request: {verb} {virtualPath}?{context.HttpContext.Request.QueryString}" );
+      Logger.LogInformation( $"route rule {routeData.DataTokens["RoutingRuleName"]} matched request: {verb} {virtualPath}{context.HttpContext.Request.QueryString}" );
       Logger.LogInformation( $"RouteData: {string.Join( ",", routeData.Values.Select( pair => string.Format( "\"{0}\" : \"{1}\"", pair.Key, pair.Value ) ).ToArray() )}" );
 
       context.RouteData = routeData;
