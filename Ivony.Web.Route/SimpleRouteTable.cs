@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Ivony.Web
 {
@@ -48,11 +49,11 @@ namespace Ivony.Web
       var routeData = GetRouteData( verb, PreprocessVirtualPath( virtualPath ), query );
       if ( routeData == null )
       {
-        Logger.LogInformation( $"there is no route rule matched request: {verb} {virtualPath}{context.HttpContext.Request.QueryString}" );
+        Logger.LogDebug( $"there is no route rule matched request: {verb} {virtualPath}{context.HttpContext.Request.QueryString}" );
         return;
       }
-      Logger.LogInformation( $"route rule {routeData.DataTokens["RoutingRuleName"]} matched request: {verb} {virtualPath}{context.HttpContext.Request.QueryString}" );
-      Logger.LogInformation( $"RouteData: {string.Join( ",", routeData.Values.Select( pair => string.Format( "\"{0}\" : \"{1}\"", pair.Key, pair.Value ) ).ToArray() )}" );
+      Logger.LogDebug( $"route rule {routeData.DataTokens["RoutingRuleName"]} matched request: {verb} {virtualPath}{context.HttpContext.Request.QueryString}" );
+      Logger.LogDebug( $"RouteData: {string.Join( ",", routeData.Values.Select( pair => string.Format( "\"{0}\" : \"{1}\"", pair.Key, pair.Value ) ).ToArray() )}" );
 
       context.RouteData = routeData;
 
@@ -97,12 +98,12 @@ namespace Ivony.Web
           return null;
 
 
-        Logger?.LogInformation( "route cache hitted." );
+        Logger.LogDebug( "route cache hitted." );
 
         return new RouteData( routeData );
       }
 
-      Logger?.LogInformation( "route cache missed." );
+      Logger.LogDebug( "route cache missed." );
 
 
 
@@ -215,7 +216,7 @@ namespace Ivony.Web
 
       if ( IsIgnoredPath( virtualPath ) )//如果产生的虚拟路径是被忽略的，则返回 null
       {
-        Logger?.LogWarning( $"名为 \"{Name}\" 路由表的 \"{bestRule.Name}\" 路由规则产生的虚拟路径 {virtualPath} 被该路由表忽略" );
+        Logger.LogWarning( $"名为 \"{Name}\" 路由表的 \"{bestRule.Name}\" 路由规则产生的虚拟路径 {virtualPath} 被该路由表忽略" );
         return null;
       }
 
@@ -413,7 +414,7 @@ namespace Ivony.Web
       Name = name;
       Handler = handler;
       UrlEncoder = encoder ?? UrlEncoder.Default;
-      Logger = loggerFactory.CreateLogger<SimpleRouteTable>();
+      Logger = loggerFactory.CreateLogger<SimpleRouteTable>() ?? NullLogger<SimpleRouteTable>.Instance;
       DefaultRouter = defaultRouter;
     }
 
