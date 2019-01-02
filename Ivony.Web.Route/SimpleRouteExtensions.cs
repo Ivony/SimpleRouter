@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
@@ -63,7 +65,19 @@ namespace Ivony.Web
     /// <param name="urlPattern">URL 模式</param>
     /// <param name="routeValues">静态/默认路由值</param>
     /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern, object routeValues = null )
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern )
+    {
+      return MapRoute( builder, urlPattern, (IDictionary<string, string>) null );
+    }
+
+    /// <summary>
+    /// 添加一个路由规则
+    /// </summary>
+    /// <param name="name">规则名称</param>
+    /// <param name="urlPattern">URL 模式</param>
+    /// <param name="routeValues">静态/默认路由值</param>
+    /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
+    public static ISimpleRouteBuilder MapRoute( this ISimpleRouteBuilder builder, string urlPattern, object routeValues )
     {
       return MapRoute( builder, urlPattern, ToPropertyMapping( routeValues ) );
     }
@@ -205,8 +219,8 @@ namespace Ivony.Web
       var routeTable = builder.Routes.OfType<SimpleRouteTable>().FirstOrDefault();
       if ( routeTable == null )
       {
-        var loggerFacory = (ILoggerFactory) builder.ApplicationBuilder.ApplicationServices.GetService( typeof( ILoggerFactory ) );
-        builder.Routes.Add( routeTable = new SimpleRouteTable( "Default", loggerFacory, builder.DefaultHandler ) );
+        routeTable = new SimpleRouteTable( "Default", builder.ServiceProvider, builder.DefaultHandler );
+        builder.Routes.Insert( 0, routeTable );
       }
 
       return routeTable;
@@ -224,6 +238,69 @@ namespace Ivony.Web
       var routeTable = builder.SimpleRouteTable();
       routeSetup( routeTable );
       return builder;
+    }
+
+
+
+    /// <summary>
+    /// 使用简单路由表
+    /// </summary>
+    /// <param name="application">IApplicationBuilder 对象</param>
+    /// <param name="routeSetup">路由设置方法</param>
+    /// <returns></returns>
+    public static IApplicationBuilder SimpleRouteTable( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup )
+    {
+      return SimpleRouteTable( application, routeSetup, application.ApplicationServices.GetRequiredService<IRouteHandler>() );
+
+    }
+
+
+    /// <summary>
+    /// 使用简单路由表
+    /// </summary>
+    /// <param name="application">IApplicationBuilder 对象</param>
+    /// <param name="routeSetup">路由设置方法</param>
+    /// <returns></returns>
+    public static IApplicationBuilder SimpleRouteTable( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup, IRouteHandler handler )
+    {
+      if ( application == null )
+        throw new ArgumentNullException( nameof( application ) );
+
+      if ( routeSetup == null )
+        throw new ArgumentNullException( nameof( routeSetup ) );
+
+      if ( handler == null )
+        throw new ArgumentNullException( nameof( handler ) );
+
+
+      var router = new SimpleRouteTable( "Default", application.ApplicationServices, handler: handler );
+      routeSetup( router );
+      return application.UseRouter( router );
+    }
+
+
+    /// <summary>
+    /// 使用简单路由表
+    /// </summary>
+    /// <param name="application">IApplicationBuilder 对象</param>
+    /// <param name="routeSetup">路由设置方法</param>
+    /// <returns></returns>
+    public static IApplicationBuilder SimpleRouteTable( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup, IRouter defaultRouter )
+    {
+
+      if ( application == null )
+        throw new ArgumentNullException( nameof( application ) );
+
+      if ( routeSetup == null )
+        throw new ArgumentNullException( nameof( routeSetup ) );
+
+      if ( defaultRouter == null )
+        throw new ArgumentNullException( nameof( defaultRouter ) );
+
+
+      var router = new SimpleRouteTable( "Default", application.ApplicationServices, defaultRouter: defaultRouter );
+      routeSetup( router );
+      return application.UseRouter( router );
     }
   }
 }

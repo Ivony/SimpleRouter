@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ivony.Web.Route.Test
 {
@@ -20,7 +21,11 @@ namespace Ivony.Web.Route.Test
     public RouteTest()
     {
 
-      RouteTable = new SimpleRouteTable( "Default" );
+
+      var services = new ServiceCollection();
+      services.AddLogging();
+
+      RouteTable = new SimpleRouteTable( "Default", services.BuildServiceProvider() );
 
     }
 
