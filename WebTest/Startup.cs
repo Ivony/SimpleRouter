@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Routing;
 
 namespace WebTest
 {
@@ -55,7 +56,7 @@ namespace WebTest
        {
 
          routes
-           .SimpleRouteTable()
+           .SimpleRoute()
            .MapRoute( "", new { controller = "Home", action = "Index" } )
            .MapRoute( "{controller}/{action}", new object() );
 

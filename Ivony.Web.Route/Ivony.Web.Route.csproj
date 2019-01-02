@@ -4,10 +4,10 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Ivony.Web</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>4.0.9</Version>
+    <Version>4.1.0</Version>
     <Authors>Ivony</Authors>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>in default, simple route table will logged.</Description>
+    <Description>Simple routing table based on conflict detection</Description>
     <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 
