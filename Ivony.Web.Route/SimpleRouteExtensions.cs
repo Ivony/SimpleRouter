@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Ivony.Web;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-namespace Ivony.Web
+namespace Microsoft.AspNetCore.Routing
 {
   public static class SimpleRouteExtensions
   {
@@ -214,7 +215,7 @@ namespace Ivony.Web
     /// </summary>
     /// <param name="builder">IRouteBuilder 对象</param>
     /// <returns></returns>
-    public static SimpleRouteTable SimpleRouteTable( this IRouteBuilder builder )
+    public static SimpleRouteTable SimpleRoute( this IRouteBuilder builder )
     {
       var routeTable = builder.Routes.OfType<SimpleRouteTable>().FirstOrDefault();
       if ( routeTable == null )
@@ -233,9 +234,9 @@ namespace Ivony.Web
     /// <param name="builder">IRouteBuilder 对象</param>
     /// <param name="routeSetup">路由设置方法</param>
     /// <returns></returns>
-    public static IRouteBuilder SimpleRouteTable( this IRouteBuilder builder, Action<SimpleRouteTable> routeSetup )
+    public static IRouteBuilder SimpleRoute( this IRouteBuilder builder, Action<SimpleRouteTable> routeSetup )
     {
-      var routeTable = builder.SimpleRouteTable();
+      var routeTable = builder.SimpleRoute();
       routeSetup( routeTable );
       return builder;
     }
@@ -248,9 +249,9 @@ namespace Ivony.Web
     /// <param name="application">IApplicationBuilder 对象</param>
     /// <param name="routeSetup">路由设置方法</param>
     /// <returns></returns>
-    public static IApplicationBuilder SimpleRouteTable( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup )
+    public static IApplicationBuilder UseSimpleRoute( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup )
     {
-      return SimpleRouteTable( application, routeSetup, application.ApplicationServices.GetRequiredService<IRouteHandler>() );
+      return UseSimpleRoute( application, routeSetup, application.ApplicationServices.GetRequiredService<IRouteHandler>() );
 
     }
 
@@ -261,7 +262,7 @@ namespace Ivony.Web
     /// <param name="application">IApplicationBuilder 对象</param>
     /// <param name="routeSetup">路由设置方法</param>
     /// <returns></returns>
-    public static IApplicationBuilder SimpleRouteTable( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup, IRouteHandler handler )
+    public static IApplicationBuilder UseSimpleRoute( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup, IRouteHandler handler )
     {
       if ( application == null )
         throw new ArgumentNullException( nameof( application ) );
@@ -285,7 +286,7 @@ namespace Ivony.Web
     /// <param name="application">IApplicationBuilder 对象</param>
     /// <param name="routeSetup">路由设置方法</param>
     /// <returns></returns>
-    public static IApplicationBuilder SimpleRouteTable( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup, IRouter defaultRouter )
+    public static IApplicationBuilder UseSimpleRoute( this IApplicationBuilder application, Action<SimpleRouteTable> routeSetup, IRouter defaultRouter )
     {
 
       if ( application == null )
