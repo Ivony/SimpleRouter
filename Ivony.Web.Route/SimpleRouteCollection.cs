@@ -15,18 +15,6 @@ namespace Ivony.Web
 
 
     /// <summary>
-    /// 路由表中定义的路由规则
-    /// </summary>
-    protected IEnumerable<SimpleRouteRule> Rules
-    {
-      get
-      {
-        return _rules;
-      }
-    }
-
-
-    /// <summary>
     /// 添加一个路由规则
     /// </summary>
     /// <param name="name">规则名称</param>
@@ -123,12 +111,12 @@ namespace Ivony.Web
 
     IEnumerator<SimpleRouteRule> IEnumerable<SimpleRouteRule>.GetEnumerator()
     {
-      return Rules.GetEnumerator();
+      return _rules.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-      return Rules.GetEnumerator();
+      return _rules.GetEnumerator();
     }
   }
 }

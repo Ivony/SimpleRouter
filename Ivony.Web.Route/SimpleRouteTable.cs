@@ -174,7 +174,7 @@ namespace Ivony.Web
 
 
 
-      var data = Rules
+      var data = this
         .Where( r => r.Verb == null || r.Verb.Equals( verb, StringComparison.OrdinalIgnoreCase ) )
         .OrderBy( r => r.DynamicRouteKeys.Count )
         .Select( r => new
@@ -264,7 +264,7 @@ namespace Ivony.Web
       var keySet = new HashSet<string>( values.Keys, StringComparer.OrdinalIgnoreCase );
 
 
-      var candidateRules = Rules
+      var candidateRules = this
         .Where( r => !r.Oneway )                                               //不是单向路由规则
         .Where( r => keySet.IsSupersetOf( r.RouteKeys ) )                      //所有路由键都必须匹配
         .Where( r => keySet.IsSubsetOf( r.AllKeys ) || !r.LimitedQueries )     //所有路由键和查询字符串键必须能涵盖要设置的键。
