@@ -9,6 +9,11 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Simple routing table based on conflict detection</Description>
     <PackageReleaseNotes></PackageReleaseNotes>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
   </PropertyGroup>
 
   <ItemGroup>
