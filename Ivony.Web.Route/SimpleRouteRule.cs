@@ -55,7 +55,7 @@ namespace Ivony.Web
       var match = urlPatternRegex.Match( urlPattern );
 
       if ( !match.Success )
-        throw new FormatException( $"url pattern is invalid format. pattern: \"{urlPattern}\"" );
+        throw new FormatException( $"url pattern format is invalid. pattern: \"{urlPattern}\"" );
 
       _paragraphes = match.Groups["paragraph"].Captures.Cast<Capture>().Select( c => c.Value ).ToArray();
 
@@ -74,14 +74,14 @@ namespace Ivony.Web
       foreach ( var key in dynamics )
       {
         if ( routeKeys.Contains( key ) )
-          throw new FormatException( "URL模式格式不正确，包含重复的动态参数名或动态参数名与预设路由键重复" );
+          throw new FormatException( "URL pattern format is invalid，contains duplicate dynamic parameter or dynamic parameter duplicate with route key." );
 
 
         routeKeys.Add( key );
       }
 
       if ( routeKeys.Intersect( queryKeys, StringComparer.OrdinalIgnoreCase ).Any() )
-        throw new FormatException( "URL模式格式不正确，动态参数或预设路由键与可选查询字符串名重复" );
+        throw new FormatException( "URL pattern format is invalid，contains duplicate dynamic parameter or dynamic parameter duplicate with query key." );
 
       DynamicRouteKeys = new ReadOnlyCollection<string>( dynamics.ToArray() );
       RouteKeys = new ReadOnlyCollection<string>( routeKeys.ToArray() );

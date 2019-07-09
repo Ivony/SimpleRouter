@@ -41,6 +41,15 @@ namespace Ivony.Web.Route.Test
 
     }
 
+    [TestMethod]
+    public void Conflict1()
+    {
+      
+      RouteTable.MapRoute( "A", "A/{action}" );
+      RouteTable.MapRoute( "Nested", "Nested/A/{action}" );
+
+    }
+
 
   }
 }

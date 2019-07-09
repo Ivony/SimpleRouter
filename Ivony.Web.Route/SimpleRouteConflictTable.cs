@@ -18,12 +18,12 @@ namespace Ivony.Web
     private object _sync = new object();
 
     /// <summary>
-    /// 在冲突检测表中添加一条记录，并检测与现有规则是否冲突。
+    /// 尝试冲突检测表中添加一条记录，并检测与现有规则是否冲突，若有冲突则无法添加成功
     /// </summary>
     /// <param name="rule">要添加的规则</param>
     /// <param name="conflictRule">与之相冲突的规则，如果有的话</param>
-    /// <returns>是否成功</returns>
-    public bool AddRuleAndCheckConflict( SimpleRouteRule rule, out SimpleRouteRule conflictRule )
+    /// <returns>是否添加成功</returns>
+    public bool TryAddRule( SimpleRouteRule rule, out SimpleRouteRule conflictRule )
     {
 
       var virtualPath = rule.GetVirtualPathDescriptor();
@@ -32,19 +32,48 @@ namespace Ivony.Web
       lock ( _sync )
       {
 
-        if ( virtualPathList.TryGetValue( virtualPath, out conflictRule ) )
+        conflictRule = GetConflict( virtualPath, routeValues );
+        if ( conflictRule != null )
           return false;
 
-        if ( routeValuesList.TryGetValue( routeValues, out conflictRule ) )
-          return false;
 
-
-        conflictRule = null;
         virtualPathList.Add( virtualPath, rule );
         routeValuesList.Add( routeValues, rule );
-
         return true;
       }
+    }
+
+
+    /// <summary>
+    /// 获取可能与指定路由规则冲突的路由规则
+    /// </summary>
+    /// <param name="rule">要检查冲突的路由规则</param>
+    /// <returns>可能与之冲突的路由规则</returns>
+    public SimpleRouteRule GetConflictRule( SimpleRouteRule rule )
+    {
+      var virtualPath = rule.GetVirtualPathDescriptor();
+      var routeValues = rule.GetRouteValuesDescriptor();
+
+      return GetConflict( virtualPath, routeValues );
+    }
+
+    private SimpleRouteRule GetConflict( string virtualPathDescriptor, string routeValuesDescriptor )
+    {
+
+      SimpleRouteRule conflictRule;
+
+      lock ( _sync )
+      {
+        if ( virtualPathList.TryGetValue( virtualPathDescriptor, out conflictRule ) )
+          return conflictRule;
+
+        if ( routeValuesList.TryGetValue( routeValuesDescriptor, out conflictRule ) )
+          return conflictRule;
+      }
+
+
+      return conflictRule;
+
     }
   }
 }

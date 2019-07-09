@@ -22,7 +22,7 @@ namespace Ivony.Web
   /// <summary>
   /// 简单路由表，提供简单的路由服务
   /// </summary>
-  public class SimpleRouteTable : IRouter, ISimpleRouteBuilder
+  public class SimpleRouteTable : SimpleRouteCollection, IRouter
   {
 
 
@@ -65,18 +65,19 @@ namespace Ivony.Web
 
 
 
-    private ICollection<SimpleRouteRule> _rules = new List<SimpleRouteRule>();
+
+
+
+
+
+    private static readonly SimpleRouteConflictTable conflictTable = new SimpleRouteConflictTable();
 
     /// <summary>
-    /// 路由表中定义的路由规则
+    /// 重写 ConflictTable 属性使用全局冲突检测表
     /// </summary>
-    public SimpleRouteRule[] Rules
-    {
-      get
-      {
-        return _rules.ToArray();
-      }
-    }
+    protected override SimpleRouteConflictTable ConflictTable => conflictTable;
+
+
 
 
     /// <summary>
@@ -173,7 +174,7 @@ namespace Ivony.Web
 
 
 
-      var data = _rules
+      var data = Rules
         .Where( r => r.Verb == null || r.Verb.Equals( verb, StringComparison.OrdinalIgnoreCase ) )
         .OrderBy( r => r.DynamicRouteKeys.Count )
         .Select( r => new
@@ -263,7 +264,7 @@ namespace Ivony.Web
       var keySet = new HashSet<string>( values.Keys, StringComparer.OrdinalIgnoreCase );
 
 
-      var candidateRules = _rules
+      var candidateRules = Rules
         .Where( r => !r.Oneway )                                               //不是单向路由规则
         .Where( r => keySet.IsSupersetOf( r.RouteKeys ) )                      //所有路由键都必须匹配
         .Where( r => keySet.IsSubsetOf( r.AllKeys ) || !r.LimitedQueries )     //所有路由键和查询字符串键必须能涵盖要设置的键。
@@ -338,88 +339,6 @@ namespace Ivony.Web
       }
 
       return builder.ToString();
-    }
-
-
-    /// <summary>
-    /// 添加一个路由规则
-    /// </summary>
-    /// <param name="name">规则名称</param>
-    /// <param name="urlPattern">URL 模式</param>
-    /// <param name="routeValues">静态/默认路由值</param>
-    /// <param name="queryKeys">可用于 QueryString 的参数，若为null则表示无限制</param>
-    public virtual SimpleRouteRule AddRule( string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
-    {
-      if ( name == null )
-        throw new ArgumentNullException( nameof( name ) );
-
-      if ( urlPattern == null )
-        throw new ArgumentNullException( nameof( urlPattern ) );
-
-      if ( routeValues == null )
-        throw new ArgumentNullException( nameof( routeValues ) );
-
-
-
-      if ( urlPattern.StartsWith( "~/" ) == false )
-      {
-        if ( urlPattern.StartsWith( "/" ) )
-          throw new ArgumentException( "urlPattern has invalid format", "urlPattern" );
-
-        urlPattern = "~/" + urlPattern;
-      }
-
-
-      urlPattern = Regex.Replace( urlPattern, "/+", "/" );
-
-      if ( urlPattern.Any() && urlPattern.EndsWith( "/" ) == false )
-        urlPattern += "/";
-
-      var rule = new SimpleRouteRule( name, urlPattern, null, oneway, routeValues, queryKeys );
-
-      return AddRule( rule );
-    }
-
-    /// <summary>
-    /// 添加一个路由规则
-    /// </summary>
-    /// <param name="rule">路由规则</param>
-    protected virtual SimpleRouteRule AddRule( SimpleRouteRule rule )
-    {
-
-      SimpleRouteRule conflictRule;
-      if ( !AddRuleAndCheckConflict( rule, out conflictRule ) )
-        throw new InvalidOperationException( string.Format( "添加规则\"{0}\"失败，路由表 \"{1}\" 中已经存在一条可能冲突的规则：\"{2}\"", rule.Name, conflictRule.SimpleRouteTable.Name, conflictRule.Name ) );
-
-      _rules.Add( rule );
-
-      rule.SimpleRouteTable = this;
-
-      return rule;
-    }
-
-
-    ISimpleRouteBuilder ISimpleRouteBuilder.AddRule( string name, string verb, bool oneway, string urlPattern, IDictionary<string, string> routeValues, IReadOnlyCollection<string> queryKeys )
-    {
-      AddRule( name, verb, oneway, urlPattern, routeValues, queryKeys );
-      return this;
-    }
-
-
-
-
-    private static SimpleRouteConflictTable conflictTable = new SimpleRouteConflictTable();
-
-
-    /// <summary>
-    /// 在冲突检测表中添加一条规则并检查冲突
-    /// </summary>
-    /// <param name="rule">要添加的规则</param>
-    /// <param name="conflictRule">与之相冲突的规则</param>
-    /// <returns>是否添加成功</returns>
-    public static bool AddRuleAndCheckConflict( SimpleRouteRule rule, out SimpleRouteRule conflictRule )
-    {
-      return conflictTable.AddRuleAndCheckConflict( rule, out conflictRule );
     }
 
 
