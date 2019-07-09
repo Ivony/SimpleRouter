@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>Ivony.Web</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>4.2.0</Version>
+    <Version>4.2.1</Version>
     <Authors>Ivony</Authors>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Simple routing table based on conflict detection</Description>

@@ -57,7 +57,7 @@ namespace Ivony.Web
     /// 添加一个路由规则
     /// </summary>
     /// <param name="rule">路由规则</param>
-    protected virtual SimpleRouteRule AddRule( SimpleRouteRule rule )
+    public virtual SimpleRouteRule AddRule( SimpleRouteRule rule )
     {
 
 
