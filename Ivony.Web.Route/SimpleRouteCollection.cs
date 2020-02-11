@@ -48,7 +48,7 @@ namespace Ivony.Web
       if ( urlPattern.Any() && urlPattern.EndsWith( "/" ) == false )
         urlPattern += "/";
 
-      var rule = new SimpleRouteRule( name, urlPattern, null, oneway, routeValues, queryKeys );
+      var rule = new SimpleRouteRule( name, urlPattern, verb, oneway, routeValues, queryKeys );
 
       return AddRule( rule );
     }
